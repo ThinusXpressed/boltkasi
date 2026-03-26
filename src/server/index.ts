@@ -28,12 +28,15 @@ function seedAdmin() {
   const password = process.env.ADMIN_PASSWORD;
   if (!username || !password) return;
 
-  const existing = db.prepare('SELECT id FROM admins WHERE username = ?').get(username);
-  if (existing) return;
-
   const hash = bcrypt.hashSync(password, 10);
-  db.prepare('INSERT INTO admins (username, password_hash) VALUES (?, ?)').run(username, hash);
-  console.log(`[init] Admin account created: ${username}`);
+  const existing = db.prepare('SELECT id FROM admins WHERE username = ?').get(username);
+  if (existing) {
+    db.prepare('UPDATE admins SET password_hash = ? WHERE username = ?').run(hash, username);
+    console.log(`[init] Admin password synced from env: ${username}`);
+  } else {
+    db.prepare('INSERT INTO admins (username, password_hash) VALUES (?, ?)').run(username, hash);
+    console.log(`[init] Admin account created: ${username}`);
+  }
 }
 
 // ── Payment received handler ──────────────────────────────────────────────────
