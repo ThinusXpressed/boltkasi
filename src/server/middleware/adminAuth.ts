@@ -16,7 +16,7 @@ export function requireAdmin(
     return;
   }
   try {
-    const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET!) as {
+    const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET!) as unknown as {
       role: string;
       sub: number;
     };

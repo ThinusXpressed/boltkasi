@@ -58,7 +58,6 @@ router.get('/users/:id', (req, res) => {
     .prepare('SELECT id, programmed_at, enabled, uid, tx_max_sats, day_max_sats FROM cards WHERE user_id = ?')
     .get(userId) as any;
 
-  const proto = DOMAIN().startsWith('localhost') ? 'http' : 'https';
   res.json({
     ...user,
     ln_address: user.ln_address_enabled ? `${user.username}@${DOMAIN()}` : null,

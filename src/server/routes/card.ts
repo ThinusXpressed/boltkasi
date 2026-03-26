@@ -24,7 +24,6 @@ interface CardRow {
 router.get('/setup/:token', (req, res) => {
   const { token } = req.params;
   const DOMAIN = process.env.DOMAIN!;
-  const proto = DOMAIN.startsWith('localhost') ? 'http' : 'https';
 
   let card: CardRow | undefined;
 
