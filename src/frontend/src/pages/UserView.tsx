@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { usePriceFeed, formatZAR } from '../hooks/usePriceFeed';
 
 interface UserData {
   username: string;
@@ -17,6 +18,7 @@ interface UserData {
 
 export default function UserView() {
   const { magic_token } = useParams<{ magic_token: string }>();
+  const { zarPerSat } = usePriceFeed();
   const [data, setData] = useState<UserData | null>(null);
   const [error, setError] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -84,6 +86,11 @@ export default function UserView() {
           {data.balance_sats.toLocaleString()}
           <span className="muted" style={{ fontSize: 18, marginLeft: 6 }}>sats</span>
         </p>
+        {zarPerSat && (
+          <p style={{ fontSize: 22, fontWeight: 600, color: '#f7931a', marginTop: 4 }}>
+            {formatZAR(data.balance_sats, zarPerSat)}
+          </p>
+        )}
         <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
           ≈ {(data.balance_sats / 100_000_000).toFixed(8)} BTC
         </p>
@@ -141,7 +148,10 @@ export default function UserView() {
                       {tx.type === 'refill' ? '↓ refill' : '↑ spend'}
                     </span>
                   </td>
-                  <td style={{ fontWeight: 600 }}>{tx.amount_sats.toLocaleString()} sats</td>
+                  <td style={{ fontWeight: 600 }}>
+                    {tx.amount_sats.toLocaleString()} sats
+                    {zarPerSat && <span className="muted" style={{ display: 'block', fontSize: 12, fontWeight: 400 }}>{formatZAR(tx.amount_sats, zarPerSat)}</span>}
+                  </td>
                   <td className="muted">{tx.description ?? '—'}</td>
                   <td className="muted" style={{ fontSize: 12 }}>{new Date(tx.created_at * 1000).toLocaleDateString()}</td>
                 </tr>

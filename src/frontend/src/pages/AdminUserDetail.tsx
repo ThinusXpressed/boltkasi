@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { usePriceFeed, formatZAR } from '../hooks/usePriceFeed';
 
 function authHeaders() {
   return { Authorization: `Bearer ${localStorage.getItem('admin_token')}` };
@@ -35,6 +36,7 @@ interface UserDetail {
 export default function AdminUserDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { zarPerSat } = usePriceFeed();
   const [user, setUser] = useState<UserDetail | null>(null);
   const [error, setError] = useState('');
   const [creditAmount, setCreditAmount] = useState('');
@@ -156,6 +158,7 @@ export default function AdminUserDetail() {
         <div className="card">
           <p className="muted" style={{ marginBottom: 4 }}>Balance</p>
           <p style={{ fontSize: 28, fontWeight: 700 }}>{user.balance_sats.toLocaleString()} <span className="muted" style={{ fontSize: 14 }}>sats</span></p>
+          {zarPerSat && <p className="muted" style={{ fontSize: 13, marginTop: 2 }}>{formatZAR(user.balance_sats, zarPerSat)}</p>}
           <form onSubmit={credit} style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <input
               style={{ width: 110 }}
@@ -314,7 +317,10 @@ export default function AdminUserDetail() {
                       {tx.type === 'refill' ? '↓ refill' : '↑ spend'}
                     </span>
                   </td>
-                  <td>{tx.amount_sats.toLocaleString()} sats</td>
+                  <td>
+                    {tx.amount_sats.toLocaleString()} sats
+                    {zarPerSat && <span className="muted" style={{ marginLeft: 6 }}>({formatZAR(tx.amount_sats, zarPerSat)})</span>}
+                  </td>
                   <td className="muted">{tx.description ?? '—'}</td>
                   <td className="muted">{new Date(tx.created_at * 1000).toLocaleString()}</td>
                 </tr>

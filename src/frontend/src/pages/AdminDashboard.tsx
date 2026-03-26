@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePriceFeed, formatZAR } from '../hooks/usePriceFeed';
 
 interface UserRow {
   id: number;
@@ -17,6 +18,7 @@ function authHeaders() {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { zarPerSat } = usePriceFeed();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [systemBalance, setSystemBalance] = useState<number | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -67,7 +69,10 @@ export default function AdminDashboard() {
         <h1 style={{ fontSize: 22 }}>⚡ BoltCard Admin</h1>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           {systemBalance !== null && (
-            <span className="muted">Blink balance: <strong style={{ color: '#f0f0f0' }}>{systemBalance.toLocaleString()} sats</strong></span>
+            <span className="muted">
+              Blink: <strong style={{ color: '#f0f0f0' }}>{systemBalance.toLocaleString()} sats</strong>
+              {zarPerSat && <span style={{ color: '#888', marginLeft: 6 }}>({formatZAR(systemBalance, zarPerSat)})</span>}
+            </span>
           )}
           <button className="btn-ghost" onClick={logout}>Logout</button>
         </div>
@@ -119,7 +124,10 @@ export default function AdminDashboard() {
               <tr key={u.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/admin/users/${u.id}`)}>
                 <td><code>{u.username}</code></td>
                 <td>{u.display_name}</td>
-                <td>{u.balance_sats.toLocaleString()} sats</td>
+                <td>
+                  {u.balance_sats.toLocaleString()} sats
+                  {zarPerSat && <span className="muted" style={{ marginLeft: 6 }}>({formatZAR(u.balance_sats, zarPerSat)})</span>}
+                </td>
                 <td>{cardStatus(u)}</td>
                 <td style={{ textAlign: 'right' }}>
                   <span style={{ color: '#f7931a', fontSize: 13 }}>View →</span>
