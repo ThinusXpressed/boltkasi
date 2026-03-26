@@ -43,6 +43,7 @@ export default function AdminUserDetail() {
   const [txMaxInput, setTxMaxInput] = useState('');
   const [dayMaxInput, setDayMaxInput] = useState('');
   const [copied, setCopied] = useState(false);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch(`/api/admin/users/${id}`, { headers: authHeaders() });
@@ -52,6 +53,15 @@ export default function AdminUserDetail() {
     if (data.card) {
       setTxMaxInput(String(data.card.tx_max_sats));
       setDayMaxInput(String(data.card.day_max_sats));
+    }
+    if (data.card?.setup_token) {
+      const qrRes = await fetch(`/api/admin/users/${id}/card/qr`, { headers: authHeaders() });
+      if (qrRes.ok) {
+        const blob = await qrRes.blob();
+        setQrUrl(URL.createObjectURL(blob));
+      }
+    } else {
+      setQrUrl(null);
     }
   }
 
@@ -208,11 +218,13 @@ export default function AdminUserDetail() {
                 {user.card.setup_token ? (
                   <>
                     <p className="muted" style={{ marginBottom: 8, fontSize: 13 }}>Scan with Boltcard Programmer app to program card:</p>
-                    <img
-                      src={`/api/admin/users/${id}/card/qr`}
-                      alt="Programming QR"
-                      style={{ width: 200, height: 200, display: 'block', borderRadius: 8 }}
-                    />
+                    {qrUrl && (
+                      <img
+                        src={qrUrl}
+                        alt="Programming QR"
+                        style={{ width: 200, height: 200, display: 'block', borderRadius: 8 }}
+                      />
+                    )}
                     <p className="muted" style={{ marginTop: 6, fontSize: 12 }}>QR is single-use and expires after scanning.</p>
                   </>
                 ) : (
